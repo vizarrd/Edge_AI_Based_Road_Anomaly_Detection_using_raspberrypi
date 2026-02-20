@@ -365,6 +365,4 @@ Edge AI Deployment on ARM Platforms
 ---
 
 
-**Public**
 
-Copy your repository link and paste it into the Project Submission Form.
