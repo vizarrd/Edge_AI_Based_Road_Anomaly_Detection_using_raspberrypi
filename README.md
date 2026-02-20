@@ -1,19 +1,28 @@
 # 🚀 Edge AI Based Road Anomaly Detection using Raspberry Pi
 
+---
+
 ## 📌 Project Overview
 
-This project implements a **Real-Time Edge AI Road Anomaly Detection System** using Raspberry Pi.
+This project implements a **Real-Time Edge AI Road Anomaly Detection System** deployed on a Raspberry Pi.
 
-It detects:
+The system detects:
+
 - 🕳️ Potholes
 - 🚧 Obstacles
 
-The system:
-- Runs YOLO-based ONNX model on Raspberry Pi (CPU only)
-- Shows live detection with timestamp
-- Classifies pothole intensity (LOW / MEDIUM / HIGH)
-- Automatically records detection videos
-- Saves pothole and obstacle recordings in separate folders
+Features:
+
+- ONNX optimized YOLO model (INT8)
+- CPU-only inference (no GPU required)
+- Real-time camera processing
+- Timestamp overlay
+- Pothole intensity classification (LOW / MEDIUM / HIGH)
+- Automatic video logging
+- Separate folders for pothole and obstacle events
+- Natural playback speed recording
+
+This solution is designed for **edge deployment on ARM-based systems**.
 
 ---
 
@@ -22,22 +31,27 @@ The system:
 - Raspberry Pi 4 / Raspberry Pi 5
 - Raspberry Pi OS (64-bit recommended)
 - USB Camera or Pi Camera Module
-- High-speed microSD card
+- High-speed microSD card (recommended: Class 10+)
 
 ---
 
 # 💻 Software Requirements
 
-- Python 3.9+
+- Raspberry Pi OS
+- Python 3.11 (via pyenv)
 - OpenCV
 - NumPy
 - ONNX Runtime
 
 ---
 
-# 🔧 Installation & Setup Guide
+# 🔧 Complete Setup Guide (Clean Environment Using pyenv)
 
-## Step 1️⃣ Update Raspberry Pi
+Follow these steps exactly.
+
+---
+
+## 🔹 Step 1 — Update Raspberry Pi
 
 ```bash
 sudo apt update
@@ -46,98 +60,200 @@ sudo apt upgrade -y
 
 ---
 
-## Step 2️⃣ Install Required Packages
+## 🔹 Step 2 — Install Build Dependencies (Required for pyenv)
 
 ```bash
-sudo apt install python3-pip -y
-pip3 install --upgrade pip
-pip3 install opencv-python numpy onnxruntime
+sudo apt install -y make build-essential libssl-dev zlib1g-dev \
+libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+libncurses5-dev libncursesw5-dev xz-utils tk-dev \
+libffi-dev liblzma-dev git
 ```
 
 ---
 
-## Step 3️⃣ Create Project Folder
+## 🔹 Step 3 — Install pyenv
 
 ```bash
+curl https://pyenv.run | bash
+```
+
+Add pyenv to your shell:
+
+```bash
+echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ~/.bashrc
+echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
+echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
+exec "$SHELL"
+```
+
+Verify installation:
+
+```bash
+pyenv --version
+```
+
+---
+
+## 🔹 Step 4 — Install Python 3.11.9
+
+```bash
+pyenv install 3.11.9
+pyenv global 3.11.9
+```
+
+Verify:
+
+```bash
+python --version
+```
+
+Expected:
+
+```
+Python 3.11.9
+```
+
+---
+
+## 🔹 Step 5 — Create Virtual Environment
+
+```bash
+pyenv virtualenv 3.11.9 yolo311
+pyenv activate yolo311
+```
+
+Verify:
+
+```bash
+python --version
+```
+
+---
+
+## 🔹 Step 6 — Upgrade pip
+
+```bash
+pip install --upgrade pip
+```
+
+---
+
+## 🔹 Step 7 — Install Required Packages
+
+Make sure you are inside `(yolo311)`.
+
+```bash
+pip install numpy opencv-python onnxruntime
+```
+
+Note:
+
+- ❌ No torch
+- ❌ No ultralytics
+- ✅ Using ONNX Runtime directly
+
+---
+
+# 📂 Project Setup
+
+---
+
+## 🔹 Step 8 — Create Project Folder
+
+```bash
+cd ~
 mkdir project
 cd project
 ```
 
 ---
 
-## Step 4️⃣ Clone Repository
+## 🔹 Step 9 — Clone Repository
 
 ```bash
 git clone https://github.com/vizarrd/Edge_AI_Based_Road_Anomaly_Detection_using_raspberrypi.git
-```
-
-Then enter the folder:
-
-```bash
 cd Edge_AI_Based_Road_Anomaly_Detection_using_raspberrypi
 ```
 
-This downloads:
+Files included:
+
 - detect_ai.py
 - best_dynamic_int8.onnx
 - best.pt
 
 ---
 
-# ▶️ Run the Project
+# ▶️ Running the Project
+
+Ensure virtual environment is active:
 
 ```bash
-python3 detect_ai.py
+pyenv activate yolo311
 ```
 
-Press **q** to exit the application.
+Run:
+
+```bash
+python detect_ai.py
+```
+
+Press:
+
+```
+q
+```
+
+To exit the detection window.
 
 ---
 
-# 📁 Output Folders
+# 📁 Output Structure
 
 After detection:
 
-- pothole/ → contains pothole detection recordings
-- obstacle/ → contains obstacle detection recordings
+```
+project/
+│
+├── pothole/
+│   ├── pothole_YYYYMMDDHHMMSS.avi
+│
+├── obstacle/
+│   ├── obstacle_YYYYMMDDHHMMSS.avi
+```
 
-Each video is timestamped automatically.
+Each detection is automatically logged.
 
 ---
 
-# 🧠 How It Works
+# 🧠 How The System Works
 
-1. Camera captures live video.
-2. Frame is resized and preprocessed.
-3. ONNX model performs CPU inference.
-4. If detected:
+1. Captures live camera feed.
+2. Resizes frame to 640x640.
+3. Runs ONNX inference on CPU.
+4. Applies Non-Max Suppression.
+5. Detects:
    - Class 0 → Obstacle
    - Class 1 → Pothole
-5. Pothole intensity is classified:
-   - LOW
-   - MEDIUM
-   - HIGH
-6. Video is recorded using real-time FPS (natural playback, no fast video).
+6. For potholes:
+   - Calculates bounding box area
+   - Classifies intensity:
+     - LOW
+     - MEDIUM
+     - HIGH
+7. Saves detection video with real-time FPS.
 
 ---
 
 # ⚙️ When You Need to Modify detect_ai.py
 
-Normally, no modification is required.
+Normally, no changes required.
 
-Modify only in the following cases:
+Modify only in these cases:
 
 ---
 
-## 🔹 Case 1: Model File Name is Different
-
-If your model file is not named:
-
-```
-best_dynamic_int8.onnx
-```
-
-Then edit:
+## 🔹 If Model File Name Is Different
 
 ```bash
 nano detect_ai.py
@@ -151,7 +267,7 @@ MODEL_PATH = os.path.join(BASE_DIR, "best_dynamic_int8.onnx")
 
 Replace with your model filename.
 
-Save and exit:
+Save:
 
 ```
 CTRL + X
@@ -161,9 +277,9 @@ ENTER
 
 ---
 
-## 🔹 Case 2: Camera Not Detected
+## 🔹 If Camera Not Detected
 
-If camera does not open, edit:
+Edit:
 
 ```bash
 nano detect_ai.py
@@ -184,7 +300,7 @@ Save and exit.
 
 ---
 
-## 🔹 Case 3: Adjust Detection Confidence
+## 🔹 If You Want Higher Detection Strictness
 
 Find:
 
@@ -192,39 +308,39 @@ Find:
 CONF_THRESHOLD = 0.4
 ```
 
-Increase value (e.g., 0.5) to reduce false positives.
+Increase to 0.5 or 0.6.
 
 ---
 
 # 📊 Performance
 
 - CPU-based inference
-- Optimized INT8 ONNX model
-- Real-time detection
-- Natural speed recording
-- Separate logging for pothole & obstacle
+- INT8 optimized model
+- Real-time edge deployment
+- No cloud dependency
+- Automatic logging
+- Separate anomaly classification
 
 ---
 
-# 📂 Repository Files
+# 📦 Repository Files
 
 | File | Description |
 |------|------------|
 | detect_ai.py | Main detection script |
 | best_dynamic_int8.onnx | Quantized YOLO model |
-| best.pt | Trained model |
+| best.pt | Trained PyTorch model |
 
 ---
 
-# 🏆 Key Features
+# 🏆 Key Highlights
 
-- Edge AI based
-- No cloud dependency
-- Low power deployment
-- Timestamp overlay
-- Intensity classification
-- Automatic video logging
-- Folder-wise event storage
+- Edge AI deployment on ARM platform
+- Optimized for Raspberry Pi
+- Quantized model for performance
+- Clean Python virtual environment
+- Natural-speed recording
+- Organized anomaly logging
 
 ---
 
@@ -236,7 +352,7 @@ Press:
 q
 ```
 
-To close the detection window.
+To stop the system.
 
 ---
 
@@ -247,8 +363,7 @@ Edge AI Deployment on ARM Platforms
 
 ---
 
-If you are cloning this project for the first time, make sure your repository visibility is set to:
 
-Public
+**Public**
 
-Copy your repository link and submit it in the Project Submission Form.
+Copy your repository link and paste it into the Project Submission Form.
