@@ -1,4 +1,4 @@
-# 🚀 Edge AI Based Road Anomaly Detection using Raspberry Pi
+#  Edge AI Based Road Anomaly Detection using Raspberry Pi
 
 ---
 
