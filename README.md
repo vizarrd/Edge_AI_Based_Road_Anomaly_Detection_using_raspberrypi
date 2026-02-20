@@ -135,6 +135,7 @@ python --version
 
 ```bash
 pip install --upgrade pip
+pip install pydrive2
 ```
 
 ---
